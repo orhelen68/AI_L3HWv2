@@ -1,0 +1,99 @@
+# Homework 3 Testing alternative approach to database structure
+# Helen Or
+from sqlmodel import SQLModel, Field, create_engine, Session
+from typing import Optional
+from pydantic import BaseModel
+
+# Define the models
+class IkeaFurniture(SQLModel, table=True):
+    __tablename__ = "ikea_furniture"    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    series : str
+    furniture_type: str
+    width: float
+    height: float
+    depth: float
+    price: float
+    qty_in_stock: int
+    
+class Ikea_Chair_Fields(SQLModel, table=True):
+    __tablename__ = "ikea_chair_fields"    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    furniture_id: int = Field(foreign_key="ikea_furniture.id")
+    has_arms: bool
+    
+class Ikea_Table_Fields(SQLModel, table=True):
+    __tablename__ = "ikea_table_fields"    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    furniture_id: int = Field(foreign_key="ikea_furniture.id")
+    shape: str
+    capacity: int
+    
+class Ikea_Shelf_Fields(SQLModel, table=True):
+    __tablename__ = "ikea_shelf_fields"    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    furniture_id: int = Field(foreign_key="ikea_furniture.id")
+    shape: str
+    capacity: int
+    
+# Define the database URL
+database_url = "sqlite:///./database.db"
+# Create the database engine
+engine = create_engine(database_url, echo=True)
+# Create the database tables
+SQLModel.metadata.create_all(engine)
+
+# Define the instances
+chair1 = IkeaFurniture(name="Poang", series="Poang", furniture_type="Chair", width=60, height=100, depth=80, price=100.0, qty_in_stock=10)
+chair1_fields = Ikea_Chair_Fields(furniture_id=1, has_arms=True)
+table1 = IkeaFurniture(name="Linnmon", series="Linnmon", furniture_type="Table", width=120, height=75, depth=60, price=150.0, qty_in_stock=5)
+table1_fields = Ikea_Table_Fields(furniture_id=2, shape="Rectangle", capacity=6)
+shelf1 = IkeaFurniture(name="Billy", series="Billy", furniture_type="Shelf", width=80, height=200, depth=30, price=80.0, qty_in_stock=15)
+shelf1_fields = Ikea_Shelf_Fields(furniture_id=3, shape="Rectangle", capacity=5)
+
+# Create a session to interact with the database
+with Session(engine) as session:
+    # Add the instances to the session
+    session.add(chair1)
+    session.add(chair1_fields)
+    session.add(table1)
+    session.add(table1_fields)
+    session.add(shelf1)
+    session.add(shelf1_fields)
+    
+    # Commit the changes to the database
+    session.commit()
+    # Query the database to verify the entries
+    ikea_furniture = session.query(IkeaFurniture).all()
+    ikea_chair_fields = session.query(Ikea_Chair_Fields).all()
+    ikea_table_fields = session.query(Ikea_Table_Fields).all()
+    ikea_shelf_fields = session.query(Ikea_Shelf_Fields).all()
+    # Print the results
+    print("Ikea Furniture:")
+    for item in ikea_furniture:
+        print(item)
+    print("\nIkea Chair Fields:")
+    for item in ikea_chair_fields:
+        print(item)
+    print("\nIkea Table Fields:")
+    for item in ikea_table_fields:
+        print(item)
+    print("\nIkea Shelf Fields:")  
+    for item in ikea_shelf_fields:
+        print(item)
+    # Close the session 
+    session.close()
+# Note: The database file will be created in the current working directory.
+# The database file name is "database.db".
+# The tables will be created with the specified structure.
+# The instances will be added to the database.
+# The entries will be printed to the console.
+# The session will be closed after the operations are completed.
+# The database file can be opened with any SQLite viewer to verify the entries.
+# The database file can be deleted after the operations are completed.
+# The database file can be deleted to remove the database.
+
+    
+    
+    
